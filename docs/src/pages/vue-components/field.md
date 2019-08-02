@@ -1,5 +1,6 @@
 ---
 title: Field
+desc: The QField Vue component is used to provide common functionality and aspect to form components.
 ---
 
 The QField component is used to provide common functionality and aspect to form components. It uses `:value` (or `v-model` if you want to use `clearable` property) to have knowledge of the model of the component inside. It has support for labels, hints, errors, validation, and comes in a variety of styles and colors.
@@ -21,6 +22,10 @@ The examples below use dumb content (text) just to show you the design that QFie
 
 ::: warning
 For your QField you can use only one of the main designs (`filled`, `outlined`, `standout`, `borderless`). You cannot use multiple as they are self-exclusive.
+:::
+
+::: danger
+QField does not (and should not) manage your `control` slot, so if you use `label` prop, it might be a good idea to also specify `stack-label`, otherwise it might overlap your control when QField is not focused.
 :::
 
 <doc-example title="Design Overview" file="QField/DesignOverview" />

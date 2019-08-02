@@ -31,7 +31,7 @@
         </q-toolbar>
         <q-toolbar v-if="extraRow" inset>
           <q-avatar>
-            <img src="https://cdn.quasar-framework.org/img/quasar-logo.png">
+            <img src="https://cdn.quasar.dev/img/quasar-logo.png">
           </q-avatar>
           <q-toolbar-title>
             <strong>Quasar</strong> Framework
@@ -74,6 +74,8 @@
         :overlay="rightOverlay"
         :behavior="rightBehavior"
         :breakpoint="rightBreakpoint"
+        :mini="rightMini"
+        :mini-to-overlay="rightMiniToOverlay"
         :content-class="drawerClass"
         @on-layout="drawerOnLayout"
       >
@@ -118,10 +120,10 @@
           </div>
         </q-scroll-area>
 
-        <q-img class="absolute-top" src="https://cdn.quasar-framework.org/img/material.png" style="height: 204px">
+        <q-img class="absolute-top" src="https://cdn.quasar.dev/img/material.png" style="height: 204px">
           <div class="absolute-bottom bg-transparent">
             <q-avatar size="56px" class="q-mb-sm">
-              <img src="https://cdn.quasar-framework.org/img/boy-avatar.png">
+              <img src="https://cdn.quasar.dev/img/boy-avatar.png">
             </q-avatar>
             <div class="text-weight-bold">
               Razvan Stoenescu
@@ -161,6 +163,7 @@
           :overlay="leftOverlay"
           :behavior="leftBehavior"
           :breakpoint="leftBreakpoint"
+          :mini-to-overlay="leftMiniToOverlay"
           :content-class="drawerClass"
         >
           <!--
@@ -297,7 +300,7 @@
             <q-item v-for="n in 3" :key="'item.' + n">
               <q-item-section side>
                 <q-avatar>
-                  <img src="https://cdn.quasar-framework.org/img/boy-avatar.png">
+                  <img src="https://cdn.quasar.dev/img/boy-avatar.png">
                 </q-avatar>
               </q-item-section>
               <q-item-section>
@@ -336,7 +339,10 @@
             <q-toggle dense v-model="leftOverlay" label="Left as Overlay" />
           </div>
           <div>
-            <q-select v-model="leftBehavior" :options="drawerBehaviorOptions" />
+            <q-toggle dense v-model="leftMiniToOverlay" label="Left Mini to Overlay" />
+          </div>
+          <div>
+            <q-select emit-value v-model="leftBehavior" :options="drawerBehaviorOptions" />
           </div>
           <div>
             <q-input type="number" align="right" prefix="Bkpt" placeholder="Bkpt" v-model="leftBreakpoint" />
@@ -356,7 +362,10 @@
             <q-toggle dense v-model="rightOverlay" label="Right as Overlay" />
           </div>
           <div>
-            <q-select v-model="rightBehavior" :options="drawerBehaviorOptions" />
+            <q-toggle dense v-model="rightMiniToOverlay" label="Right Mini to Overlay" />
+          </div>
+          <div>
+            <q-select emit-value v-model="rightBehavior" :options="drawerBehaviorOptions" />
           </div>
           <div>
             <q-input type="number" align="right" prefix="Bkpt" placeholder="Bkpt" v-model="rightBreakpoint" />
@@ -486,7 +495,9 @@ export default {
       leftBreakpoint: 992,
       rightBreakpoint: 992,
       leftMini: true,
+      leftMiniToOverlay: true,
       rightMini: false,
+      rightMiniToOverlay: false,
 
       bordered: false,
       elevated: false,
@@ -531,7 +542,7 @@ export default {
     drawerClass () {
       return this.whiteLayout
         ? 'bg-white'
-        : 'bg-grey-3'
+        : 'bg-grey-5'
     }
   },
   watch: {

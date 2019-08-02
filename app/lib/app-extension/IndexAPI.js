@@ -29,8 +29,10 @@ module.exports = class IndexAPI {
       extendWebpackMainElectronProcess: [],
       chainWebpack: [],
       beforeDev: [],
+      afterDev: [],
       beforeBuild: [],
       afterBuild: [],
+      onPublish: [],
       commands: {},
       describeApi: {}
     }
@@ -94,18 +96,6 @@ module.exports = class IndexAPI {
       warn(`⚠️  Extension(${this.extId}): is not compatible with ${packageName} v${json.version}. Required version: ${semverCondition}`)
       process.exit(1)
     }
-  }
-
-  /**
-   * DEPRECATED
-   * Alias to compatibleWith('@quasar/app', semverCondition)
-   * TODO: remove in rc.1
-   *
-   * @param {string} semverCondition
-   */
-  compatibleWithQuasarApp (semverCondition) {
-    warn(`⚠️  Extension(${this.extId}): using deprecated compatibleWithQuasarApp() instead of compatibleWith()`)
-    this.compatibleWith('@quasar/app', semverCondition)
   }
 
   /**
@@ -207,11 +197,11 @@ module.exports = class IndexAPI {
 
   /**
    * Register a command that will become available as
-   * `quasar run <ext-id> <cmd> [args]`.
+   * `quasar run <ext-id> <cmd> [args]` and `quasar <ext-id> <cmd> [args]`
    *
    * @param {string} commandName
    * @param {function} fn
-   *   (args: { [ string ] }, params: {object} }) => ?Promise
+   *   ({ args: [ string, ... ], params: {object} }) => ?Promise
    */
   registerCommand (commandName, fn) {
     this.__hooks.commands[commandName] = fn
@@ -233,22 +223,22 @@ module.exports = class IndexAPI {
    * Prepare external services before dev command runs.
    *
    * @param {function} fn
-   *   () => ?Promise
+   *   (api, { quasarConf }) => ?Promise
    */
   beforeDev (fn) {
     this.__addHook('beforeDev', fn)
   }
 
   /**
-   * Alias to beforeDev
-   * TODO: remove in rc.1
+   * Run hook after Quasar dev server is started ($ quasar dev).
+   * At this point, the dev server has been started and is available
+   * should you wish to do something with it.
    *
    * @param {function} fn
-   *   () => ?Promise
+   *   (api, { quasarConf }) => ?Promise
    */
-  beforeDevStart (fn) {
-    warn(`⚠️  Extension(${this.extId}): using deprecated beforeDevStart() instead of beforeDev()`)
-    this.beforeDev(fn)
+  afterDev(fn) {
+    this.__addHook('afterDev', fn)
   }
 
   /**
@@ -256,7 +246,7 @@ module.exports = class IndexAPI {
    * At this point, the distributables folder hasn't been created yet.
    *
    * @param {function} fn
-   *   () => ?Promise
+   *   (api, { quasarConf }) => ?Promise
    */
   beforeBuild (fn) {
     this.__addHook('beforeBuild', fn)
@@ -268,10 +258,25 @@ module.exports = class IndexAPI {
    * should you wish to do something with it.
    *
    * @param {function} fn
-   *   () => ?Promise
+   *   (api, { quasarConf }) => ?Promise
    */
   afterBuild (fn) {
     this.__addHook('afterBuild', fn)
+  }
+
+  /**
+   * Run hook if publishing was requested ("$ quasar build -P"),
+   * after Quasar built app for production and the afterBuild
+   * hook (if specified) was executed.
+   *
+   * @param {function} fn
+   *   ({ arg, ...}) => ?Promise
+   *      * arg - argument supplied to "--publish"/"-P" parameter
+   *      * quasarConf - quasar.conf config object
+   *      * distDir - folder where distributables were built
+   */
+  onPublish (fn) {
+    this.__addHook('onPublish', fn)
   }
 
   /**

@@ -1,3 +1,13 @@
+// leave NAMED_MASKS at top of file (code referenced from docs)
+const NAMED_MASKS = {
+  date: '####/##/##',
+  datetime: '####/##/## ##:##',
+  time: '##:##',
+  fulltime: '##:##:##',
+  phone: '(###) ### - ####',
+  card: '#### #### #### ####'
+}
+
 const TOKENS = {
   '#': { pattern: '[\\d]', negate: '[^\\d]' },
 
@@ -19,15 +29,6 @@ KEYS.forEach(key => {
 const
   tokenRegexMask = new RegExp('\\\\([^.*+?^${}()|([\\]])|([.*+?^${}()|[\\]])|([' + KEYS.join('') + '])|(.)', 'g'),
   escRegex = /[.*+?^${}()|[\]\\]/g
-
-const NAMED_MASKS = {
-  date: '####/##/##',
-  datetime: '####/##/## ##:##',
-  time: '##:##',
-  fulltime: '##:##:##',
-  phone: '(###) ### - ####',
-  card: '#### #### #### ####'
-}
 
 const MARKER = String.fromCharCode(1)
 
@@ -145,13 +146,13 @@ export default {
           extract.push('(?:' + negateChar + '+?)?(' + c.pattern + ')?')
         }
         else if (esc !== void 0) {
-          unmaskChar = '\\' + esc
+          unmaskChar = '\\' + (esc === '\\' ? '' : esc)
           mask.push(esc)
           unmask.push('([^' + unmaskChar + ']+)?' + unmaskChar + '?')
         }
         else {
           const c = char1 !== void 0 ? char1 : char2
-          unmaskChar = c.replace(escRegex, '\\\\$&')
+          unmaskChar = c === '\\' ? '\\\\\\\\' : c.replace(escRegex, '\\\\$&')
           mask.push(c)
           unmask.push('([^' + unmaskChar + ']+)?' + unmaskChar + '?')
         }
@@ -164,14 +165,21 @@ export default {
           '(' + (unmaskChar === '' ? '.' : '[^' + unmaskChar + ']') + '+)?' +
           '$'
         ),
-        extractMatcher = new RegExp(
-          '^' +
-          (this.reverseFillMask === true ? fillCharEscaped + '*' : '') +
-          extract.join('') +
-          '(' + (negateChar === '' ? '.' : negateChar) + '+)?' +
-          (this.reverseFillMask === true ? '' : fillCharEscaped + '*') +
-          '$'
-        )
+        extractLast = extract.length - 1,
+        extractMatcher = extract.map((re, index) => {
+          if (index === 0 && this.reverseFillMask === true) {
+            return new RegExp('^' + fillCharEscaped + '*' + re)
+          }
+          else if (index === extractLast) {
+            return new RegExp(
+              '^' + re +
+              '(' + (negateChar === '' ? '.' : negateChar) + '+)?' +
+              (this.reverseFillMask === true ? '$' : fillCharEscaped + '*')
+            )
+          }
+
+          return new RegExp('^' + re)
+        })
 
       this.computedMask = mask
       this.computedUnmask = val => {
@@ -180,9 +188,22 @@ export default {
           val = unmaskMatch.slice(1).join('')
         }
 
-        const extractMatch = extractMatcher.exec(val)
-        if (extractMatch !== null) {
-          return extractMatch.slice(1).join('')
+        const
+          extractMatch = [],
+          extractMatcherLength = extractMatcher.length
+
+        for (let i = 0, str = val; i < extractMatcherLength; i++) {
+          const m = extractMatcher[i].exec(str)
+
+          if (m === null) {
+            break
+          }
+
+          str = str.slice(m.shift().length)
+          extractMatch.push(...m)
+        }
+        if (extractMatch.length > 0) {
+          return extractMatch.join('')
         }
 
         return val

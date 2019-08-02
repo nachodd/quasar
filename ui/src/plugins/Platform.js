@@ -9,13 +9,14 @@ export let fromSSR = false
 export let onSSR = isSSR
 
 function getMatch (userAgent, platformMatch) {
-  const match = /(edge)\/([\w.]+)/.exec(userAgent) ||
+  const match = /(edge|edga|edgios)\/([\w.]+)/.exec(userAgent) ||
     /(opr)[\/]([\w.]+)/.exec(userAgent) ||
     /(vivaldi)[\/]([\w.]+)/.exec(userAgent) ||
-    /(chrome)[\/]([\w.]+)/.exec(userAgent) ||
+    /(chrome|crios)[\/]([\w.]+)/.exec(userAgent) ||
     /(iemobile)[\/]([\w.]+)/.exec(userAgent) ||
     /(version)(applewebkit)[\/]([\w.]+).*(safari)[\/]([\w.]+)/.exec(userAgent) ||
     /(webkit)[\/]([\w.]+).*(version)[\/]([\w.]+).*(safari)[\/]([\w.]+)/.exec(userAgent) ||
+    /(firefox|fxios)[\/]([\w.]+)/.exec(userAgent) ||
     /(webkit)[\/]([\w.]+)/.exec(userAgent) ||
     /(opera)(?:.*version|)[\/]([\w.]+)/.exec(userAgent) ||
     /(msie) ([\w.]+)/.exec(userAgent) ||
@@ -29,6 +30,10 @@ function getMatch (userAgent, platformMatch) {
     versionNumber: match[4] || match[2] || '0',
     platform: platformMatch[0] || ''
   }
+}
+
+function getClientUserAgent () {
+  return (navigator.userAgent || navigator.vendor || window.opera).toLowerCase()
 }
 
 function getPlatformMatch (userAgent) {
@@ -50,8 +55,6 @@ function getPlatformMatch (userAgent) {
 }
 
 function getPlatform (userAgent) {
-  userAgent = (userAgent || navigator.userAgent || navigator.vendor || window.opera).toLowerCase()
-
   const
     platformMatch = getPlatformMatch(userAgent),
     matched = getMatch(userAgent, platformMatch),
@@ -67,10 +70,40 @@ function getPlatform (userAgent) {
     browser[matched.platform] = true
   }
 
+  const knownMobiles = browser.android ||
+    browser.ios ||
+    browser.bb ||
+    browser.blackberry ||
+    browser.ipad ||
+    browser.iphone ||
+    browser.ipod ||
+    browser.kindle ||
+    browser.playbook ||
+    browser.silk ||
+    browser['windows phone']
+
   // These are all considered mobile platforms, meaning they run a mobile browser
-  if (browser.android || browser.bb || browser.blackberry || browser.ipad || browser.iphone ||
-    browser.ipod || browser.kindle || browser.playbook || browser.silk || browser['windows phone']) {
+  if (knownMobiles === true || userAgent.indexOf('mobile') > -1) {
     browser.mobile = true
+
+    if (browser.edga || browser.edgios) {
+      browser.edge = true
+      matched.browser = 'edge'
+    }
+    else if (browser.crios) {
+      browser.chrome = true
+      matched.browser = 'chrome'
+    }
+    else if (browser.fxios) {
+      browser.firefox = true
+      matched.browser = 'firefox'
+    }
+  }
+  // If it's not mobile we should consider it's desktop platform, meaning it runs a desktop browser
+  // It's a workaround for anonymized user agents
+  // (browser.cros || browser.mac || browser.linux || browser.win)
+  else {
+    browser.desktop = true
   }
 
   // Set iOS if on iPod, iPad or iPhone
@@ -83,13 +116,19 @@ function getPlatform (userAgent) {
     delete browser['windows phone']
   }
 
-  // These are all considered desktop platforms, meaning they run a desktop browser
-  if (browser.cros || browser.mac || browser.linux || browser.win) {
-    browser.desktop = true
-  }
-
   // Chrome, Opera 15+, Vivaldi and Safari are webkit based browsers
-  if (browser.chrome || browser.opr || browser.safari || browser.vivaldi) {
+  if (
+    browser.chrome ||
+    browser.opr ||
+    browser.safari ||
+    browser.vivaldi ||
+    // we expect unknown, non iOS mobile browsers to be webkit based
+    (
+      browser.mobile === true &&
+      browser.ios !== true &&
+      knownMobiles !== true
+    )
+  ) {
     browser.webkit = true
   }
 
@@ -97,12 +136,6 @@ function getPlatform (userAgent) {
   if (browser.rv || browser.iemobile) {
     matched.browser = 'ie'
     browser.ie = true
-  }
-
-  // Edge is officially known as Microsoft Edge, so rewrite the key to match
-  if (browser.edge) {
-    matched.browser = 'edge'
-    browser.edge = true
   }
 
   // Blackberry browsers are marked as Safari on BlackBerry
@@ -193,7 +226,9 @@ export function hasWebStorage () {
 function getClientProperties () {
   return {
     has: {
-      touch: (() => !!('ontouchstart' in document.documentElement) || window.navigator.msMaxTouchPoints > 0)(),
+      touch: (() => 'ontouchstart' in window ||
+        window.navigator.maxTouchPoints > 0
+      )(),
       webStorage: hasWebStorage()
     },
     within: {
@@ -210,12 +245,20 @@ export default {
   within: { iframe: false },
 
   parseSSR (/* ssrContext */ ssr) {
-    return ssr ? {
-      is: getPlatform(ssr.req.headers['user-agent']),
-      has: this.has,
-      within: this.within
-    } : {
-      is: getPlatform(),
+    if (ssr) {
+      const userAgent = (ssr.req.headers['user-agent'] || ssr.req.headers['User-Agent'] || '').toLowerCase()
+      return {
+        userAgent,
+        is: getPlatform(userAgent),
+        has: this.has,
+        within: this.within
+      }
+    }
+
+    const userAgent = getClientUserAgent()
+    return {
+      userAgent,
+      is: getPlatform(userAgent),
       ...getClientProperties()
     }
   },
@@ -228,7 +271,8 @@ export default {
       return
     }
 
-    this.is = getPlatform()
+    this.userAgent = getClientUserAgent()
+    this.is = getPlatform(this.userAgent)
 
     if (fromSSR === true) {
       queues.takeover.push(q => {

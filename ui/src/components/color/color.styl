@@ -4,6 +4,8 @@
   max-width 350px
   vertical-align top
 
+  min-width 150px
+
   border-radius $generic-border-radius
   box-shadow $shadow-2
 
@@ -128,6 +130,10 @@
       width 4em
 
   /* Palette Tab */
+
+  &__palette-rows
+    &--editable .q-color-picker__cube
+      cursor pointer
 
   &__cube
     padding-bottom 10%

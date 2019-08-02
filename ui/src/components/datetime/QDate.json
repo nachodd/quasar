@@ -8,11 +8,26 @@
   "props": {
     "value": {
       "extends": "value",
+      "required": true,
       "desc": "Date of the component; Either use this property (along with a listener for 'input' event) OR use v-model directive",
       "examples": [
         "v-model=\"myDate\""
       ],
       "category": "model"
+    },
+
+    "title": {
+      "type": "String",
+      "desc": "When specified, it overrides the default header title; Makes sense when not in 'minimal' mode",
+      "examples": [ "Birthday" ],
+      "category": "content"
+    },
+
+    "subtitle": {
+      "type": "String",
+      "desc": "When specified, it overrides the default header subtitle; Makes sense when not in 'minimal' mode",
+      "examples": [ "John Doe" ],
+      "category": "content"
     },
 
     "emit-immediately": {

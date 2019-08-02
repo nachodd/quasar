@@ -1,5 +1,6 @@
 ---
 title: Cookies
+desc: A Quasar plugin which manages browser cookies over the standardized 'document.cookie', making it easy to read and write cookies even with SSR apps.
 ---
 This is a wrapper over the standardized `document.cookie`.
 
@@ -109,7 +110,7 @@ Define the path where the cookie is valid. By default the path of the cookie is 
 
 ### Option: domain
 ``` js
-domain: 'quasar-framework.org'
+domain: 'quasar.dev'
 ```
 Define the domain where the cookie is valid. Default: domain of page where the cookie was created.
 

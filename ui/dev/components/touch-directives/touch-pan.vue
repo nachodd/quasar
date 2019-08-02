@@ -39,6 +39,67 @@
       </div>
 
       <p class="caption">
+        Page scrolling is prevented, but you can opt out if you wish.
+      </p>
+      <div>
+        Click status: {{ clickStatus }}
+      </div>
+      <div
+        v-touch-pan.prevent.right.mouse="handlePanRight"
+        @click="e => onEvt('click', e)"
+        @mousedown="e => onEvt('mousedown', e)"
+        @mousemove="e => onEvt('mousemove', e)"
+        @mouseup="e => onEvt('mouseup', e)"
+        class="custom-area row flex-center"
+        ref="area"
+      >
+        <div v-if="infoRight" class="custom-info">
+          <pre>{{ infoRight }}</pre>
+        </div>
+        <div v-else class="text-center q-pa-xl custom-area-placeholder">
+          <div class="row items-center">
+            <div>Pan right</div>
+            <q-icon name="arrow_forward" />
+          </div>
+        </div>
+
+        <div v-if="panningRight" class="touch-signal">
+          <q-icon name="touch_app" />
+        </div>
+      </div>
+
+      <p class="caption">
+        Page scrolling is prevented, but you can opt out if you wish.
+      </p>
+      <div>
+        Click status: {{ clickStatus }}
+      </div>
+      <div
+        v-touch-pan.prevent.up.right.mouse="handlePanUpRight"
+        @click="e => onEvt('click', e)"
+        @mousedown="e => onEvt('mousedown', e)"
+        @mousemove="e => onEvt('mousemove', e)"
+        @mouseup="e => onEvt('mouseup', e)"
+        class="custom-area row flex-center"
+        ref="area"
+      >
+        <div v-if="infoUpRight" class="custom-info">
+          <pre>{{ infoUpRight }}</pre>
+        </div>
+        <div v-else class="text-center q-pa-xl custom-area-placeholder">
+          <q-icon name="arrow_upward" />
+          <div class="row items-center">
+            <div>Pan up & right</div>
+            <q-icon name="arrow_forward" />
+          </div>
+        </div>
+
+        <div v-if="panningUpRight" class="touch-signal">
+          <q-icon name="touch_app" />
+        </div>
+      </div>
+
+      <p class="caption">
         Panning works both with a mouse or a native touch action.
         <br>
         You can also capture pan to certain directions (any) only as you'll see below.
@@ -109,6 +170,69 @@
       <p class="caption">
         For desktops, you can configure to avoid capturing mouse pans if you wish.
       </p>
+
+      <p class="caption">
+        Pan test (preventing it from inner square)
+      </p>
+      <div
+        v-touch-pan.mouse="handlePanTest"
+        @click="e => onEvt('click', e)"
+        class="row flex-center"
+      >
+        <div @touchstart="handleEvt" @mousedown="handleEvt" style="padding: 24px" class="cursor-pointer bg-primary text-white rounded-borders shadow-2 relative-position">
+          <div>
+            <q-toggle dark color="black" v-model="panTestStopPropagation" label="Stop propagation" />
+          </div>
+
+          <div v-if="infoTest" class="custom-info">
+            <pre>{{ infoTest }}</pre>
+          </div>
+
+          <div v-else class="text-center q-pa-xl custom-area-placeholder">
+            <q-icon name="arrow_upward" />
+            <div class="row items-center">
+              <q-icon name="arrow_back" />
+              <div>Pan in any direction</div>
+              <q-icon name="arrow_forward" />
+            </div>
+            <q-icon name="arrow_downward" />
+          </div>
+
+          <div v-if="panningTest" class="touch-signal">
+            <q-icon name="touch_app" />
+          </div>
+        </div>
+      </div>
+
+      <p class="caption">
+        Pan test (capture + preventing it from inner square)
+        -- should still work
+      </p>
+      <div
+        v-touch-pan.prevent.capture.mouse.mouseCapture="handlePanTestCapture"
+        @click="e => onEvt('click', e)"
+        class="row flex-center"
+      >
+        <div @touchstart.stop @mousedown.stop style="padding: 24px" class="cursor-pointer bg-primary text-white rounded-borders shadow-2 relative-position">
+          <div v-if="infoTestCapture" class="custom-info">
+            <pre>{{ infoTestCapture }}</pre>
+          </div>
+
+          <div v-else class="text-center q-pa-xl custom-area-placeholder">
+            <q-icon name="arrow_upward" />
+            <div class="row items-center">
+              <q-icon name="arrow_back" />
+              <div>Pan in any direction</div>
+              <q-icon name="arrow_forward" />
+            </div>
+            <q-icon name="arrow_downward" />
+          </div>
+
+          <div v-if="panningTestCapture" class="touch-signal">
+            <q-icon name="touch_app" />
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -123,54 +247,130 @@ export default {
       panning: false,
       clickStatus: null,
 
+      infoRight: null,
+      panningRight: false,
+
+      infoUpRight: null,
+      panningUpRight: false,
+
       infoHorizontal: null,
       panningHorizontal: false,
 
       infoVertical: null,
-      panningVertical: false
+      panningVertical: false,
+
+      panTestStopPropagation: true,
+      infoTest: null,
+      panningTest: false,
+
+      infoTestCapture: null,
+      panningTestCapture: false
     }
   },
   methods: {
-    handlePan ({ position, direction, duration, distance, delta, isFirst, isFinal, evt }) {
-      this.info = { position, direction, duration, distance, delta, isFirst, isFinal }
+    handlePan ({ evt, ...info }) {
+      this.info = info
 
       // native Javascript event
       // console.log(evt)
 
-      if (isFirst) {
+      if (info.isFirst) {
         this.panning = true
         this.clickStatus = null
       }
-      else if (isFinal) {
+      else if (info.isFinal) {
         this.panning = false
       }
     },
-    panHorizontally ({ position, direction, duration, distance, delta, isFirst, isFinal, evt }) {
-      this.infoHorizontal = { position, direction, duration, distance, delta, isFirst, isFinal }
+    handlePanRight ({ evt, ...info }) {
+      this.infoRight = info
 
       // native Javascript event
       // console.log(evt)
 
-      if (isFirst) {
+      if (info.isFirst) {
+        this.panningRight = true
+        this.clickStatus = null
+      }
+      else if (info.isFinal) {
+        this.panningRight = false
+      }
+    },
+    handlePanUpRight ({ evt, ...info }) {
+      this.infoUpRight = info
+
+      // native Javascript event
+      // console.log(evt)
+
+      if (info.isFirst) {
+        this.panningUpRight = true
+        this.clickStatus = null
+      }
+      else if (info.isFinal) {
+        this.panningUpRight = false
+      }
+    },
+    panHorizontally ({ evt, ...info }) {
+      this.infoHorizontal = info
+
+      // native Javascript event
+      // console.log(evt)
+
+      if (info.isFirst) {
         this.panningHorizontal = true
         this.clickStatus = null
       }
-      else if (isFinal) {
+      else if (info.isFinal) {
         this.panningHorizontal = false
       }
     },
-    panVertically ({ position, direction, duration, distance, delta, isFirst, isFinal, evt }) {
-      this.infoVertical = { position, direction, duration, distance, delta, isFirst, isFinal }
+    panVertically ({ evt, ...info }) {
+      this.infoVertical = info
 
       // native Javascript event
       // console.log(evt)
 
-      if (isFirst) {
+      if (info.isFirst) {
         this.panningVertical = true
         this.clickStatus = null
       }
-      else if (isFinal) {
+      else if (info.isFinal) {
         this.panningVertical = false
+      }
+    },
+
+    handleEvt (e) {
+      if (this.panTestStopPropagation) {
+        e.stopPropagation()
+      }
+    },
+    handlePanTest ({ evt, ...info }) {
+      this.infoTest = info
+
+      // native Javascript event
+      console.log(evt)
+
+      if (info.isFirst) {
+        this.panningTest = true
+        this.clickStatus = null
+      }
+      else if (info.isFinal) {
+        this.panningTest = false
+      }
+    },
+
+    handlePanTestCapture ({ evt, ...info }) {
+      this.infoTestCapture = info
+
+      // native Javascript event
+      console.log(evt)
+
+      if (info.isFirst) {
+        this.panningTestCapture = true
+        this.clickStatus = null
+      }
+      else if (info.isFinal) {
+        this.panningTestCapture = false
       }
     },
 

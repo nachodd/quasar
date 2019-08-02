@@ -1,5 +1,6 @@
 ---
 title: Uploader
+desc: The QUploader Vue component is a way for the user to upload files to a backend server.
 ---
 Quasar supplies a way for you to upload files through the QUploader component.
 
@@ -40,18 +41,22 @@ By default, multiple files will be uploaded individually (one thread per file). 
 In the example above, we're using `accept` property. Its value must be a comma separated list of unique file type specifiers. Maps to 'accept' attribute of native input type=file element. [More info](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/file#Unique_file_type_specifiers).
 :::
 
+::: warning
+Recommended format for the `accept` property is `<mediatype>/<extension>`. Examples: "image/png", "image/png". QUploader uses an `<input type="file">` under the covers and it relies entirely on the host browser to trigger the file picker. If the `accept` property (that gets applied to the input) is not correct, no file picker will appear on screen or it will appear but it will accept all file types.
+:::
+
 You can also apply custom filters (which are executed after user picks files):
 
 <doc-example title="Filter" file="QUploader/RestrictionFilter" />
 
 ### Adding headers
 
-Use `headers` for setting additional XHR headers to be sent along the upload request. Also check `fields` prop in the API, if you need additional fields to be embedded.
+Use `headers` for setting additional XHR headers to be sent along the upload request. Also check `form-fields` prop in the API, if you need additional fields to be embedded.
 
 <doc-example title="Headers" file="QUploader/Headers" />
 
 ::: tip
-These two props (`headers` and `fields`) can be used as a function too (`(files) => Array`), allowing you to dynamically set them based on the files that are to be uploaded.
+These two props (`headers` and `form-fields`) can be used as a function too (`(files) => Array`), allowing you to dynamically set them based on the files that are to be uploaded.
 :::
 
 There is also the `with-credentials` property, which sets `withCredentials` to `true` on the XHR used by the upload process.
@@ -69,7 +74,7 @@ You can also customize the HTTP headers and HTTP method through `headers` and `m
 ### Factory function
 There is a `factory` prop you can use which must be a Function. This function can return either an Object or a Promise resolving with an Object (and in case the Promise fails, `@factory-failed` event is emitted).
 
-The Object described above can override the following QUploader props: `url`, `method`, `headers`, `fields`, `fieldName`, `withCredentials`, `sendRaw`). The props of this Object can be Functions as well (of form `(file[s]) => value`):
+The Object described above can override the following QUploader props: `url`, `method`, `headers`, `formFields`, `fieldName`, `withCredentials`, `sendRaw`). The props of this Object can be Functions as well (of form `(file[s]) => value`):
 
 <doc-example title="Promise-based factory function" file="QUploader/FactoryPromise" />
 
@@ -83,6 +88,10 @@ In the example below we're showing the equivalent of the default header. Also no
 
 ::: warning
 Notice that you must install and use one more component (QUploaderAddTrigger) in order to be able to add files to the queue. This component needs to be placed under a DOM node which has `position: relative` (hint: QBtn has it already) and will automatically inject the necessary events when user clicks on its parent (do NOT manually add `@click="scope.pickFiles"`).
+:::
+
+::: tip IE11 Support with custom header
+For the file picker to work on IE11 when wrapping QUploaderAddTrigger with a QBtn, make sure that this button has `type="a"` specified.
 :::
 
 <doc-example title="Custom header" file="QUploader/SlotHeader" />
@@ -146,15 +155,19 @@ app.listen(port, () => {
 ## Supporting other services
 QUploader currently supports uploading through the HTTP protocol. But you can extend the component to support other services as well. Like Firebase for example. Here's how you can do it.
 
+### Instructions
+
 Below is an example with the API that you need to supply. You'll be creating a new Vue component that extends the Base of QUploader that you can then import and use in your website/app.
 
 ::: tip
-For the default XHR implementation, check out [source code](https://github.com/quasarframework/quasar/blob/dev/quasar/src/components/uploader/uploader-xhr-mixin.js).
+For the default XHR implementation, check out [source code](https://github.com/quasarframework/quasar/blob/dev/ui/src/components/uploader/uploader-xhr-mixin.js).
 :::
 
 ::: warning Help appreciated
 We'd be more than happy to accept PRs on supporting other upload services as well, so others can benefit.
 :::
+
+For the UMD version, you can extend `Quasar.components.QUploaderBase`.
 
 ```js
 // MyUploader.js
@@ -201,7 +214,79 @@ export default {
 }
 ```
 
-For the UMD version, you can extend `Quasar.components.QUploaderBase`.
+### ASP.NET MVC/Core
+QUploader seamlessly integrates with a Microsoft ASP.NET MVC/Core 2.x Web API backend.
+In your Vue file, configure the QUploader component with the desired Web API endpoint:
+
+```vue
+<q-uploader
+  url="http://localhost:4444/fileuploader/upload"
+  label="Upload"
+  style="max-width: 300px"
+/>
+```
+
+If your server requires authentication such as a JWT token, use QUploader's factory function to specify the xhr header that will be used by QUploader. For example:
+
+```html
+<template>
+  <q-uploader
+    label="Upload"
+    :factory="factoryFn"
+    style="max-width: 300px"
+  />
+</template>
+
+<script>
+export default {
+  methods: {
+    factoryFn (file) {
+      return new Promise((resolve, reject) => {
+        // Retrieve JWT token from your store.
+        const token = "myToken";
+        resolve({
+          url: http://localhost:4444/fileuploader/upload,
+          method: 'POST',
+          headers: [
+            { name: 'Content-Type', value: 'application/json-patch+json'},
+            { name: 'Authorization', value: `Bearer ${token}` }
+          ]
+        })
+      })
+    }
+  }
+}
+</script>
+```
+
+The file(s) payload of QUploader will be a properly formed ```IFormFileCollection``` object that you can read via your ASP.NET Web API controller's ```.Request``` property.
+ASP.NET Core 2.2 Controller:
+
+```
+[Route("api/[controller]")]
+[ApiController]
+public class FileUploaderController : ControllerBase
+{
+    [HttpPost]
+    public async Task upload()
+    {
+        // Request's .Form.Files property will
+        // contain QUploader's files.
+        var files = this.Request.Form.Files;
+        foreach (var file in files)
+        {
+            if (file == null || file.Length == 0)
+                continue;
+
+            // Do something with the file.
+            var fileName = file.FileName;
+            var fileSize = file.Length;
+            // save to server...
+            // ...
+        }
+    }
+}
+```
 
 ## QUploader API
 <doc-api file="QUploader" />

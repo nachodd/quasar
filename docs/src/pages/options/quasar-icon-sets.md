@@ -1,5 +1,6 @@
 ---
 title: Quasar Icon Sets
+desc: How to configure icon sets for Quasar components.
 related:
   - /options/installing-icon-libraries
   - /vue-components/icon
@@ -10,6 +11,8 @@ Quasar components have their own icons. Rather than forcing you into using one i
 You can install multiple icon libraries, but you must choose only one to use on Quasar's components.
 
 Quasar currently supports: [Material Icons](https://material.io/icons/) , [Font Awesome](http://fontawesome.io/icons/), [Ionicons](http://ionicons.com/), [MDI](https://materialdesignicons.com/) and [Eva Icons](https://akveo.github.io/eva-icons).
+
+It is also possible to use your own icons (as images in any format) with any Quasar component, see the [QIcon page](/vue-components/icon#Images-instead-of-webfont) for more info on this.
 
 ::: tip
 Related pages: [Installing Icon Libraries](/options/installing-icon-libraries) and [QIcon component](/vue-components/icon).
@@ -46,6 +49,17 @@ framework: {
 ```
 
 This will enable you to use both Ionicons & Fontawesome in your app, and all Quasar components will display Fontawesome icons.
+
+#### Changing Icon Set Dynamically
+Quasar Icon Set is reactive, so all components will update properly if you change the $q.iconSet object. Here is a example:
+
+```js
+methods: {
+  changeIconSetToFontAwesome () {
+    this.$q.iconSet = require('quasar/icon-set/fontawesome-v5.js').default
+  }
+}
+```
 
 ### UMD Way
 Include the Quasar Icon Set tag for your Quasar version and also tell Quasar to use it. Example:

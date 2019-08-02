@@ -1,5 +1,6 @@
 ---
 title: Introduction to Flexbox
+desc: What the flexbox CSS is and how it can be used in a Quasar App.
 related:
   - /style/spacing
   - /style/visibility
@@ -10,21 +11,21 @@ Quasar provides lots of CSS classes to help you build your UI easily with the he
 Flexbox (upon which Quasar Flex CSS classes are based on) module aims at providing a more efficient way to lay out, align and distribute space among items in a container, even when their size is unknown and/or dynamic (thus the word “flex”).
 
 ::: tip
-This page covers the basic theory of Quasar Flex CSS classes and prepares you for the in-depth pages on [Grid Row](/layout/grid/row), [Grid Column](/layout/grid/column) and [Grid Gutter](/layouts/grid/gutter).
+This page covers the basic theory of Quasar Flex CSS classes and prepares you for the in-depth pages on [Grid Row](/layout/grid/row), [Grid Column](/layout/grid/column) and [Grid Gutter](/layout/grid/gutter).
 :::
 
 ## Key concept
 Quasar Flex CSS classes apply to either the Container (Parent) or the Container's items (Children).
 
-![Flexbox Container](https://cdn.quasar-framework.org/img/flexbox-container.svg)
-![Flexbox Items](https://cdn.quasar-framework.org/img/flexbox-items.svg)
+![Flexbox Container](https://cdn.quasar.dev/img/flexbox-container.svg)
+![Flexbox Items](https://cdn.quasar.dev/img/flexbox-items.svg)
 
 ## Managing Parent
 
 ### Setting Direction
 One of the following CSS classes is mandatory for the parent in order for the children ones (described in next sections) to have any effect.
 
-![Flexbox Direction](https://cdn.quasar-framework.org/img/flexbox-direction.svg)
+![Flexbox Direction](https://cdn.quasar.dev/img/flexbox-direction.svg)
 
 | Class Name | Description |
 | --- | --- |
@@ -47,7 +48,7 @@ Example:
 ### Wrapping by default
 By default, all rows and columns are wrapping content.
 
-![Flexbox Direction](https://cdn.quasar-framework.org/img/flexbox-wrap.svg)
+![Flexbox Direction](https://cdn.quasar.dev/img/flexbox-wrap.svg)
 
 However if you explicitly do not want to wrap and by so doing you want to fit all content into one line, then add `no-wrap` CSS helper class.
 
@@ -63,15 +64,15 @@ Also, if you want to wrap in reverse order, then `reverse-wrap` is available.
 
 **For alignment along the main axis**, use classes below. It helps distribute extra free space left over when either all the flex items on a line are inflexible, or are flexible but have reached their maximum size. It also exerts some control over the alignment of items when they overflow the line.
 
-![Flexbox Justify Content](https://cdn.quasar-framework.org/img/flexbox-main-axis-align.svg)
+![Flexbox Justify Content](https://cdn.quasar.dev/img/flexbox-main-axis-align.svg)
 
 **For alignment perpendicular to the main axis**, use classes below. This defines the default behavior for how flex items are laid out along the cross axis on the current line. Think of it as the horizontal-* version for the cross-axis (perpendicular to the main-axis).
 
-![Flexbox Items Align](https://cdn.quasar-framework.org/img/flexbox-cross-axis-align.svg)
+![Flexbox Items Align](https://cdn.quasar.dev/img/flexbox-cross-axis-align.svg)
 
 The next classes **align a flex container's lines** within when there is extra space in the cross-axis, similar to how horizontal-* aligns individual items within the main-axis.
 
-![Flexbox Content Align](https://cdn.quasar-framework.org/img/flexbox-content-align.svg)
+![Flexbox Content Align](https://cdn.quasar.dev/img/flexbox-content-align.svg)
 
 ## Managing Children
 
@@ -115,9 +116,9 @@ Another example with a visual representation below it:
   <div class="col-3">1</div>
 </div>
 ```
-![Flexbox Grow](https://cdn.quasar-framework.org/img/flexbox-grow.svg)
+![Flexbox Grow](https://cdn.quasar.dev/img/flexbox-grow.svg)
 
-There's also the possible to offset a cell. Example: `offset-4` which offsets a third of space (4/12 = 1/3 = 33%).
+It is also possible to offset a cell. For example: `offset-4` offsets a third of space (4/12 = 1/3 = 33%).
 
 ### Wrapping
 Wrapping is a key feature in understanding Flex CSS classes. You are not bound to use exactly 12 points per row. You can use less or even more.
@@ -148,7 +149,7 @@ This allows you, among other things, to dynamically stack rows vertically on sma
 ### Self Alignment
 **An item can override the aligned specified on parent**. This allows alignment to be overridden for individual flex items. Please see the "Alignment" explanation from "Managing Parent" to understand the available values (`self-start`, `self-center`, `self-baseline`, `self-end`, `self-stretch`).
 
-![Flexbox Self](https://cdn.quasar-framework.org/img/flexbox-self.svg)
+![Flexbox Self](https://cdn.quasar.dev/img/flexbox-self.svg)
 
 ### Order
 **You can set the order** of children elements by using `order-first` and `order-last` CSS helper classes.
@@ -166,7 +167,7 @@ Example:
 
 Here is how the CSS `order` property works:
 
-![Flexbox Order](https://cdn.quasar-framework.org/img/flexbox-order.svg)
+![Flexbox Order](https://cdn.quasar.dev/img/flexbox-order.svg)
 
 ## Responsive Design
 Quasar Flex CSS classes can be applied based on the width of the screen, to help you in making a responsive UI. The 12 points grid is inspired by Bootstrap's, so there are a lot of similarities.
